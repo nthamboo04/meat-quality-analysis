@@ -218,3 +218,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Project-specific
+# Downloaded datasets (fetch with scripts/download_data.py)
+data/
+# Ultralytics training outputs and model weights
+runs/
+*.pt

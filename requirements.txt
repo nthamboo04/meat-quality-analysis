@@ -1,0 +1,16 @@
+# Data
+roboflow
+python-dotenv
+
+# Numerical / ML / CV
+numpy
+pandas
+matplotlib
+opencv-python
+scikit-learn
+ultralytics
+
+# Workflow
+jupyter
+pytest
+pdoc
