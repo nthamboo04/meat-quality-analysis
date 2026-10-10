@@ -4,11 +4,9 @@ Computer vision method that analyses images of packaged pork rashers.
 ## Repository layout
 
 ```
-src/         project source code (meat_quality package)
-notebooks/   exploratory analysis and experiments
-tests/       pytest test functions
-docs/        generated HTML documentation
-data/        downloaded dataset (git-ignored)
+meat_quality/   project source code (Python package)
+tests/          pytest test functions
+data/           downloaded dataset (git-ignored)
 ```
 
 ## Setup
@@ -32,10 +30,22 @@ version:
 | Version   | 4                             |
 | Format    | YOLOv12                       |
 
-1. Sign in to [Roboflow](https://app.roboflow.com) (a free account is enough)
-   and open the project above.
+1. Open the dataset on Roboflow Universe:
+   <https://universe.roboflow.com/hello-2aqe0/pork-rasher-error-packaging/dataset/4>
+   (signing in with a free account may be required to download).
 2. Select **version 4**, click **Download Dataset**, choose the **YOLOv12**
    format and **Download zip to computer**.
 3. Unzip the contents into `data/pork-rasher-error-packaging-4/`, so that
    the folder contains `data.yaml` and `train/`, `valid/` and `test/`
    subfolders.
+
+The dataset contains 3549 images at 720x540 (3349 train / 120 valid / 80
+test) with five classes: `loose-meat`, `packaging-error`, `twisted-meat`,
+`unsealed` and `wrinkle`.
+
+## Data licence
+
+"Pork Rasher Error(Packaging)" v4, provided by a Roboflow user via
+[Roboflow Universe](https://universe.roboflow.com/hello-2aqe0/pork-rasher-error-packaging),
+is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+The code in this repository is licensed separately (see `LICENSE`).
