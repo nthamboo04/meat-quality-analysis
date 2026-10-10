@@ -1,7 +1,3 @@
-# Data
-roboflow
-python-dotenv
-
 # Numerical / ML / CV
 numpy
 pandas

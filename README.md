@@ -4,7 +4,6 @@ Computer vision method that analyses images of packaged pork rashers.
 ## Repository layout
 
 ```
-scripts/     one-off utilities (e.g. dataset download)
 src/         project source code (meat_quality package)
 notebooks/   exploratory analysis and experiments
 tests/       pytest test functions
@@ -22,14 +21,21 @@ pip install -r requirements.txt
 
 ## Getting the data
 
-The dataset is hosted on Roboflow (project `pork-rasher-error-packaging`,
-version 4, YOLO format) and is not stored in this repository.
+The dataset is hosted on Roboflow and is not stored in this repository
+(`data/` is git-ignored). To reproduce the results, download exactly this
+version:
 
-1. Copy `.env.example` to `.env` and set `ROBOFLOW_API_KEY` to your Roboflow API key.
-2. Run:
+| Field     | Value                         |
+|-----------|-------------------------------|
+| Workspace | `hello-2aqe0`                 |
+| Project   | `pork-rasher-error-packaging` |
+| Version   | 4                             |
+| Format    | YOLOv12                       |
 
-   ```bash
-   python scripts/download_data.py
-   ```
-
-The images and labels are written to `data/pork-rasher-error-packaging-4/`.
+1. Sign in to [Roboflow](https://app.roboflow.com) (a free account is enough)
+   and open the project above.
+2. Select **version 4**, click **Download Dataset**, choose the **YOLOv12**
+   format and **Download zip to computer**.
+3. Unzip the contents into `data/pork-rasher-error-packaging-4/`, so that
+   the folder contains `data.yaml` and `train/`, `valid/` and `test/`
+   subfolders.
