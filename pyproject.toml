@@ -1,0 +1,4 @@
+[tool.pytest.ini_options]
+# Run tests from the repository root so the meat_quality package is importable.
+pythonpath = ["."]
+testpaths = ["tests"]

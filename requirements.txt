@@ -3,6 +3,7 @@ numpy
 pandas
 matplotlib
 opencv-python
+pyyaml
 scikit-learn
 ultralytics
 
