@@ -5,7 +5,7 @@ Computer vision method that analyses images of packaged pork rashers.
 
 ```
 meat_quality/   project source code (Python package)
-tests/          pytest test functions
+notebooks/      step-by-step analysis notebooks
 data/           downloaded dataset (git-ignored)
 ```
 
@@ -42,21 +42,6 @@ version:
 The dataset contains 3549 images at 720x540 (3349 train / 120 valid / 80
 test) with five classes: `loose-meat`, `packaging-error`, `twisted-meat`,
 `unsealed` and `wrinkle`.
-
-## Usage
-
-Print a summary of the dataset (class counts per split and photos shared
-between splits):
-
-```bash
-python -m meat_quality.dataset
-```
-
-Run the tests from the repository root:
-
-```bash
-pytest
-```
 
 ## Data licence
 
