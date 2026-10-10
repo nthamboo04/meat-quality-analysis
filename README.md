@@ -5,7 +5,6 @@ Computer vision method that analyses images of packaged pork rashers.
 
 ```
 meat_quality/   project source code (Python package)
-notebooks/      step-by-step analysis notebooks
 data/           downloaded dataset (git-ignored)
 ```
 
