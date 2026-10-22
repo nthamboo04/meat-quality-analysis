@@ -10,11 +10,22 @@ data/           downloaded dataset (git-ignored)
 
 ## Setup
 
+Developed with Python 3.12. Create a virtual environment and install the
+dependencies:
+
 ```bash
-python -m venv .venv
-.venv\Scripts\activate          # Windows; use source .venv/bin/activate on macOS/Linux
+python -m venv C:\Users\<you>\venvs\meat      # any folder; see note below
+C:\Users\<you>\venvs\meat\Scripts\activate    # macOS/Linux: source <folder>/bin/activate
 pip install -r requirements.txt
 ```
+
+On Windows, keep the environment in a short path outside OneDrive. PyTorch
+contains deeply nested files that exceed Windows' 260-character path limit
+inside long folders (such as the Microsoft Store Python's package folder),
+and OneDrive would otherwise sync thousands of package files.
+
+Training was run on Google Colab (Tesla T4 GPU, Python 3.13,
+Ultralytics 8.4.183, torch 2.11.0).
 
 ## Getting the data
 
