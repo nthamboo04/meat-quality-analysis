@@ -65,3 +65,48 @@ for class_id, class_name in enumerate(class_names):
 
 plt.tight_layout()
 plt.show()
+
+# Step 4: Count the labels in each class
+# For every split, count how many boxes there are of each class, and how many
+# images have no boxes at all (packs with no defect). These counts show how
+# balanced the classes are, which affects what the model can be trained and
+# evaluated on.
+splits = ["train", "valid", "test"]
+box_counts = {}       # box_counts[split][class_id] = number of boxes
+no_defect_counts = {} # no_defect_counts[split] = images with no boxes
+
+for split in splits:
+    box_counts[split] = [0] * num_classes
+    no_defect_counts[split] = 0
+    for label_path in (DATA_DIR / split / "labels").glob("*.txt"):
+        boxes = [line.split() for line in label_path.read_text().splitlines() if line.strip()]
+        if not boxes:
+            no_defect_counts[split] += 1
+        for box in boxes:
+            box_counts[split][int(box[0])] += 1
+
+# Print the counts as a table: one row per class, one column per split.
+print()
+print(f"{'class':16s}" + "".join(f"{split:>8s}" for split in splits))
+for class_id, class_name in enumerate(class_names):
+    print(f"{class_name:16s}" + "".join(f"{box_counts[split][class_id]:8d}" for split in splits))
+print(f"{'(no defect)':16s}" + "".join(f"{no_defect_counts[split]:8d}" for split in splits))
+
+# Plot one bar chart per split. Each has its own y-axis because the splits are
+# very different sizes (train is about 40 times bigger than test).
+bar_labels = class_names + ["(no defect)"]
+bar_colours = ["#2a78d6"] * num_classes + ["#a3a29b"]  # defects blue, no defect grey
+
+fig, axes = plt.subplots(1, len(splits), figsize=(15, 4.5))
+for ax, split in zip(axes, splits):
+    values = box_counts[split] + [no_defect_counts[split]]
+    bars = ax.bar(bar_labels, values, color=bar_colours)
+    ax.bar_label(bars, padding=2)
+    n_images = len(list((DATA_DIR / split / "images").glob("*.jpg")))
+    ax.set_title(f"{split} ({n_images} images)")
+    ax.set_ylabel("number of boxes / images")
+    ax.tick_params(axis="x", rotation=45)
+    ax.spines[["top", "right"]].set_visible(False)
+
+plt.tight_layout()
+plt.show()
