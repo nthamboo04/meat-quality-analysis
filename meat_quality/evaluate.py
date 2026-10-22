@@ -26,8 +26,9 @@ parser.add_argument("--weights", type=Path, default=DEFAULT_WEIGHTS,
                     help="path to the trained .pt file")
 parser.add_argument("--split", default="valid", choices=["train", "valid", "test"],
                     help="which split to evaluate on (default valid)")
-parser.add_argument("--conf", type=float, default=0.32,
-                    help="confidence threshold: boxes below this are ignored (default 0.32)")
+# Default: peak of the yolo11n_736 model's F1-confidence curve on the validation set.
+parser.add_argument("--conf", type=float, default=0.22,
+                    help="confidence threshold: boxes below this are ignored (default 0.22)")
 parser.add_argument("--imgsz", type=int, default=736,
                     help="image size; must match the size the model was trained at (default 736)")
 args = parser.parse_args()
