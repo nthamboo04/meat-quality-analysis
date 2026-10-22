@@ -1,0 +1,31 @@
+52 epochs completed in 0.812 hours.
+Optimizer stripped from /content/meat-quality-analysis/runs/yolo11n_736/weights/last.pt, 5.5MB
+Optimizer stripped from /content/meat-quality-analysis/runs/yolo11n_736/weights/best.pt, 5.5MB
+
+Validating /content/meat-quality-analysis/runs/yolo11n_736/weights/best.pt...
+Ultralytics 8.4.183 🚀 Python-3.13.15 torch-2.11.0+cu130 CUDA:0 (Tesla T4, 14913MiB)
+YOLO11n summary (fused): 101 layers, 2,598,023 parameters, 0 gradients, 6.4 GFLOPs
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 1.2it/s 3.2s
+                   all        120        121      0.729      0.528       0.56      0.366
+            loose-meat          3          3      0.711      0.333      0.368      0.271
+       packaging-error         23         34      0.354      0.235      0.263      0.105
+          twisted-meat          3          3          1      0.642      0.689      0.441
+              unsealed         81         81      0.851      0.901      0.919      0.648
+Speed: 4.5ms preprocess, 11.9ms inference, 0.0ms loss, 1.9ms postprocess per image
+Results saved to /content/meat-quality-analysis/runs/yolo11n_736
+
+66 epochs completed in 0.914 hours.
+Optimizer stripped from /content/meat-quality-analysis/runs/yolo11n_640/weights/last.pt, 5.5MB
+Optimizer stripped from /content/meat-quality-analysis/runs/yolo11n_640/weights/best.pt, 5.5MB
+
+Validating /content/meat-quality-analysis/runs/yolo11n_640/weights/best.pt...
+Ultralytics 8.4.183 🚀 Python-3.13.15 torch-2.11.0+cu130 CUDA:0 (Tesla T4, 14913MiB)
+YOLO11n summary (fused): 101 layers, 2,598,023 parameters, 0 gradients, 6.4 GFLOPs
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 1.1s/it 4.2s
+                   all        120        121      0.736      0.567      0.574      0.312
+            loose-meat          3          3      0.723      0.333      0.408      0.134
+       packaging-error         23         34      0.408      0.353      0.288     0.0975
+          twisted-meat          3          3      0.926      0.667      0.665      0.404
+              unsealed         81         81      0.888      0.914      0.934      0.611
+Speed: 1.5ms preprocess, 21.6ms inference, 0.0ms loss, 3.0ms postprocess per image
+Results saved to /content/meat-quality-analysis/runs/yolo11n_640
