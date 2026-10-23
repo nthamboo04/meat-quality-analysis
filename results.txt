@@ -29,3 +29,35 @@ YOLO11n summary (fused): 101 layers, 2,598,023 parameters, 0 gradients, 6.4 GFLO
               unsealed         81         81      0.888      0.914      0.934      0.611
 Speed: 1.5ms preprocess, 21.6ms inference, 0.0ms loss, 3.0ms postprocess per image
 Results saved to /content/meat-quality-analysis/runs/yolo11n_640
+
+--- yolo11s_736, run 1 (Google Colab; weights lost when the session reset) ---
+62 epochs completed in 1.130 hours.
+Optimizer stripped from /content/meat-quality-analysis/runs/yolo11s_736/weights/last.pt, 19.2MB
+Optimizer stripped from /content/meat-quality-analysis/runs/yolo11s_736/weights/best.pt, 19.2MB
+
+Validating /content/meat-quality-analysis/runs/yolo11s_736/weights/best.pt...
+Ultralytics 8.4.183 🚀 Python-3.13.15 torch-2.11.0+cu130 CUDA:0 (Tesla T4, 14913MiB)
+YOLO11s summary (fused): 100 layers, 9,414,735 parameters, 0 gradients, 21.4 GFLOPs
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 1.2it/s 3.4s
+                   all        120        121      0.606      0.587      0.573      0.339
+            loose-meat          3          3      0.416      0.333      0.372      0.188
+       packaging-error         23         34      0.318      0.471      0.319      0.106
+          twisted-meat          3          3          1      0.595      0.665      0.432
+              unsealed         81         81      0.691      0.951      0.938      0.631
+Speed: 3.1ms preprocess, 15.1ms inference, 0.0ms loss, 3.1ms postprocess per image
+Results saved to /content/meat-quality-analysis/runs/yolo11s_736
+
+--- yolo11s_736, run 2 (Kaggle; same code and settings) ---
+?? epochs completed in ?? hours.   <- fill in from the Kaggle log
+
+Validating /kaggle/working/meat-quality-analysis/runs/yolo11s_736/weights/best.pt...
+Ultralytics 8.4.184 🚀 Python-3.13.15 torch-2.11.0+cu128 CUDA:0 (Tesla T4, 14912MiB)
+YOLO11s summary (fused): 100 layers, 9,414,735 parameters, 0 gradients, 21.4 GFLOPs
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 1.9s/it 7.7s1.1s5s
+                   all        120        121      0.769      0.538      0.542      0.387
+            loose-meat          3          3      0.783      0.333      0.395      0.292
+       packaging-error         23         34       0.34      0.294       0.18     0.0545
+          twisted-meat          3          3          1      0.659      0.665      0.566
+              unsealed         81         81      0.954      0.864      0.929      0.637
+Speed: 2.8ms preprocess, 54.3ms inference, 0.0ms loss, 1.1ms postprocess per image
+Results saved to /kaggle/working/meat-quality-analysis/runs/yolo11s_736
