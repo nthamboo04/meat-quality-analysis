@@ -55,3 +55,16 @@ YOLO11n summary (fused): 101 layers, 2,598,023 parameters, 0 gradients, 6.4 GFLO
               unsealed         81         81      0.744      0.897      0.908      0.638
 Speed: 2.1ms preprocess, 58.3ms inference, 0.0ms loss, 1.2ms postprocess per image
 Results saved to /kaggle/working/meat-quality-analysis/runs/yolo11n_736_scale0.2
+
+85 epochs completed in 0.838 hours.
+Validating /kaggle/working/meat-quality-analysis/runs/yolo11n_736_scale0.0/weights/best.pt...
+Ultralytics 8.4.184 🚀 Python-3.13.15 torch-2.11.0+cu128 CUDA:0 (Tesla T4, 14912MiB)
+YOLO11n summary (fused): 101 layers, 2,598,023 parameters, 0 gradients, 6.4 GFLOPs
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 2.0s/it 8.1s
+                   all        120        121      0.835      0.505      0.565      0.344
+            loose-meat          3          3      0.921      0.333      0.335      0.268
+       packaging-error         23         34      0.613      0.206      0.362     0.0925
+          twisted-meat          3          3      0.904      0.667      0.665      0.388
+              unsealed         81         81      0.904      0.813      0.899      0.628
+Speed: 3.7ms preprocess, 56.9ms inference, 0.0ms loss, 1.7ms postprocess per image
+Results saved to /kaggle/working/meat-quality-analysis/runs/yolo11n_736_scale0.0
