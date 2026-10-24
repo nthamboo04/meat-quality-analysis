@@ -17,7 +17,7 @@ where ``class_id`` is a zero-based index into the class names and the four box
 values are fractions of the image width and height, between 0 and 1. An empty
 label file means the tray has no labelled defect.
 
-Run as a script to print the class counts and show example images and charts::
+Run as a script to print the class counts and show a label-count chart::
 
     python meat_quality/data.py
 """
@@ -25,7 +25,6 @@ Run as a script to print the class counts and show example images and charts::
 from pathlib import Path
 from typing import NamedTuple
 
-import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import yaml
 
@@ -50,18 +49,13 @@ class Label(NamedTuple):
 
 
 def load_class_names(data_dir: Path = DATA_DIR) -> list[str]:
-    """Read the class names from the dataset's ``data.yaml``.
+    """Read the class names from the dataset's data.yaml.
 
     Args:
-        data_dir: Dataset folder containing ``data.yaml``.
+        data_dir: Dataset folder containing data.yaml.
 
     Returns:
         Class names, indexed by class id.
-
-    Raises:
-        FileNotFoundError: If ``data.yaml`` does not exist.
-        ValueError: If ``data.yaml`` has no list of names, or ``nc`` does not
-            match the number of names.
     """
     with open(data_dir / "data.yaml") as f:
         config = yaml.safe_load(f)
@@ -77,15 +71,11 @@ def list_images(split: str, data_dir: Path = DATA_DIR) -> list[Path]:
     """List a split's image files, sorted by name.
 
     Args:
-        split: One of ``SPLITS``.
+        split: One of SPLITS.
         data_dir: Dataset folder.
 
     Returns:
         Paths of the ``.jpg`` images in ``<data_dir>/<split>/images``.
-
-    Raises:
-        ValueError: If ``split`` is not one of ``SPLITS``.
-        FileNotFoundError: If the split's image folder does not exist.
     """
     if split not in SPLITS:
         raise ValueError(f"unknown split {split!r}; expected one of {SPLITS}")
@@ -209,45 +199,6 @@ def count_labels(split: str, num_classes: int, data_dir: Path = DATA_DIR) -> tup
     return box_counts, n_no_defect
 
 
-def plot_example_per_class(class_names: list[str], split: str = "train",
-                           data_dir: Path = DATA_DIR) -> plt.Figure:
-    """Draw the first image of each class with that class's boxes in red.
-
-    Args:
-        class_names: Class names, indexed by class id.
-        split: Split to take the examples from.
-        data_dir: Dataset folder.
-
-    Returns:
-        The figure, with one panel per class. A class with no examples in the
-        split gets an empty panel.
-    """
-    images = list_images(split, data_dir)
-    fig, axes = plt.subplots(1, len(class_names), figsize=(4 * len(class_names), 4))
-
-    for class_id, (ax, class_name) in enumerate(zip(axes, class_names)):
-        ax.set_title(class_name)
-        ax.axis("off")
-        for image_path in images:
-            class_labels = [label for label in read_labels(label_path_for(image_path))
-                            if label.class_id == class_id]
-            if class_labels:
-                break
-        else:
-            continue  # no example of this class in the split
-
-        image = plt.imread(image_path)
-        img_height, img_width = image.shape[:2]
-        ax.imshow(image)
-        for label in class_labels:
-            x1, y1, x2, y2 = to_pixel_box(label, img_width, img_height)
-            ax.add_patch(patches.Rectangle((x1, y1), x2 - x1, y2 - y1, edgecolor="red",
-                                           facecolor="none", linewidth=2))
-
-    fig.tight_layout()
-    return fig
-
-
 def plot_label_counts(class_names: list[str], counts: dict[str, tuple[list[int], int]],
                       image_counts: dict[str, int]) -> plt.Figure:
     """Draw one bar chart of label counts per split.
@@ -280,7 +231,7 @@ def plot_label_counts(class_names: list[str], counts: dict[str, tuple[list[int],
 
 
 def main() -> None:
-    """Print dataset statistics and show example images and label-count charts."""
+    """Print dataset statistics and show label-count charts."""
     class_names = load_class_names()
     num_classes = len(class_names)
     print("class_names:", class_names)
@@ -289,9 +240,6 @@ def main() -> None:
     image_counts = {split: len(list_images(split)) for split in SPLITS}
     for split, n_images in image_counts.items():
         print(f"{split}: {n_images} images")
-
-    plot_example_per_class(class_names)
-    plt.show()
 
     counts = {split: count_labels(split, num_classes) for split in SPLITS}
     print()
