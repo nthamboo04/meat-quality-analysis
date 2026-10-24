@@ -3,6 +3,7 @@ Computer vision method that analyses images of packaged pork rashers.
 
 ## Repository layout
 
+```
 meat_quality/   project source code
     data.py       load and explore the dataset
     metrics.py    match predicted to labelled boxes and show tray pass/fail counts
@@ -12,6 +13,7 @@ meat_quality/   project source code
 data/           downloaded dataset (git-ignored)
 runs/           trained models and training outputs (git-ignored)
 results.txt     final validation output of each training run
+```
 
 ## Setup
 
@@ -33,10 +35,10 @@ Training was run on Google Colab and Kaggle (Tesla T4 GPU, Python 3.13, Ultralyt
 The dataset is hosted on Roboflow and is not stored in this repository. To reproduce the results, download exactly this
 version:
 
-Workspace: `hello-2aqe0`                 
-Project:   `pork-rasher-error-packaging` 
-Version:   4                             
-Format:    YOLOv12                       
+- Workspace: `hello-2aqe0`
+- Project: `pork-rasher-error-packaging`
+- Version: 4
+- Format: YOLOv12
 
 1. Open the dataset on Roboflow Universe:
    <https://universe.roboflow.com/hello-2aqe0/pork-rasher-error-packaging/dataset/4>

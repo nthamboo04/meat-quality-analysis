@@ -56,6 +56,11 @@ def load_class_names(data_dir: Path = DATA_DIR) -> list[str]:
 
     Returns:
         Class names, indexed by class id.
+
+    Raises:
+        FileNotFoundError: If data.yaml does not exist.
+        ValueError: If data.yaml has no list of names, or nc does not match
+            the number of names.
     """
     with open(data_dir / "data.yaml") as f:
         config = yaml.safe_load(f)
@@ -76,6 +81,10 @@ def list_images(split: str, data_dir: Path = DATA_DIR) -> list[Path]:
 
     Returns:
         Paths of the ``.jpg`` images in ``<data_dir>/<split>/images``.
+
+    Raises:
+        ValueError: If split is not one of SPLITS.
+        FileNotFoundError: If the split's image folder does not exist.
     """
     if split not in SPLITS:
         raise ValueError(f"unknown split {split!r}; expected one of {SPLITS}")
@@ -250,7 +259,6 @@ def main() -> None:
 
     plot_label_counts(class_names, counts, image_counts)
     plt.show()
-
 
 if __name__ == "__main__":
     main()
