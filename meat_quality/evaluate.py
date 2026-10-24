@@ -15,6 +15,8 @@ training output, or pass a different path with --weights.
 import argparse
 from pathlib import Path
 
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
 import yaml
 from ultralytics import YOLO
 
@@ -37,6 +39,10 @@ parser.add_argument("--imgsz", type=int, default=736,
 parser.add_argument("--agnostic", action="store_true",
                     help="use class-agnostic NMS: overlapping boxes of different classes "
                          "are also merged, keeping the most confident")
+# Chosen from the step 7 sweep on the validation set: the most cautious
+# threshold before false fails start rising (fewest defective trays let through).
+parser.add_argument("--pass-conf", type=float, default=0.10,
+                    help="confidence threshold for tray pass/fail decisions (default 0.10)")
 args = parser.parse_args()
 
 # Step 2: Load the class names, the model and the images
@@ -58,7 +64,7 @@ print(f"Evaluating {args.weights.name} on {len(image_paths)} {args.split} images
 # fast.
 MIN_CONF = 0.05
 
-images = []  # one (true_boxes, predictions) pair per image
+images = []  # one (image_path, true_boxes, predictions) entry per image
 
 # stream=True gives results one image at a time instead of holding all of them
 # in memory at once.
@@ -83,7 +89,7 @@ for image_path, result in zip(image_paths, results):
         (conf, int(cls), box) for conf, cls, box in
         zip(result.boxes.conf.tolist(), result.boxes.cls.tolist(), result.boxes.xyxy.tolist())
     )[::-1]
-    images.append((true_boxes, predictions))
+    images.append((image_path, true_boxes, predictions))
 
 # Step 4: Match predicted boxes to labelled boxes
 # A predicted box is a correct detection (true positive, TP) if it has the
@@ -148,7 +154,7 @@ def match(thresholds):
     tp, fp, fn = [0] * num_classes, [0] * num_classes, [0] * num_classes
     fp_by_reason = {reason: [0] * num_classes for reason in FP_REASONS}
 
-    for true_boxes, predictions in images:
+    for _, true_boxes, predictions in images:
         matched = [False] * len(true_boxes)
         for conf, pred_class, pred_box in predictions:
             if conf < thresholds[pred_class]:
@@ -262,7 +268,7 @@ def pass_fail(thresholds):
         "fail" is a tray the model rejects and a "pass" one it lets through.
     """
     correct_fails = false_passes = false_fails = correct_passes = 0
-    for true_boxes, predictions in images:
+    for _, true_boxes, predictions in images:
         defective = len(true_boxes) > 0
         rejected = any(conf >= thresholds[cls] for conf, cls, _ in predictions)
         if defective and rejected:
@@ -276,7 +282,7 @@ def pass_fail(thresholds):
     return correct_fails, false_passes, false_fails, correct_passes
 
 
-n_defective = sum(1 for true_boxes, _ in images if true_boxes)
+n_defective = sum(1 for _, true_boxes, _ in images if true_boxes)
 n_good = len(images) - n_defective
 print()
 print(f"=== Pass/fail per tray: {len(images)} trays, {n_defective} defective, {n_good} good ===")
@@ -303,3 +309,53 @@ print_pass_fail_row("per-class (step 6)", best_thresholds)
 # passes) to high (lets more trays through, fewer false fails).
 for threshold in [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50, 0.60, 0.70]:
     print_pass_fail_row(f"all classes {threshold:.2f}", [threshold] * num_classes)
+
+# Step 8: Show the trays that are passed or failed wrongly
+# At the chosen pass/fail threshold, find the false passes (defective trays
+# let through) and false fails (good trays rejected), and display them with
+# the labelled boxes (solid blue) and the predicted boxes above the threshold
+# (dashed orange, with their confidence), to see why the model got them wrong.
+LABEL_COLOUR = "#2a78d6"
+PREDICTION_COLOUR = "#eb6834"
+
+mistakes = []  # (kind, image_path, true_boxes, kept_predictions)
+for image_path, true_boxes, predictions in images:
+    kept = [p for p in predictions if p[0] >= args.pass_conf]
+    if true_boxes and not kept:
+        mistakes.append(("FALSE PASS", image_path, true_boxes, kept))
+    elif not true_boxes and kept:
+        mistakes.append(("FALSE FAIL", image_path, true_boxes, kept))
+
+print()
+print(f"=== Wrongly passed or failed trays at confidence >= {args.pass_conf} ===")
+for kind, image_path, _, _ in mistakes:
+    print(f"{kind}: {image_path.name}")
+
+if mistakes:
+    n_cols = min(4, len(mistakes))
+    n_rows = -(-len(mistakes) // n_cols)  # ceiling division
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(4.5 * n_cols, 3.8 * n_rows), squeeze=False)
+    for ax in axes.flat:
+        ax.axis("off")
+
+    for ax, (kind, image_path, true_boxes, kept) in zip(axes.flat, mistakes):
+        ax.imshow(plt.imread(image_path))
+        for class_id, (x1, y1, x2, y2) in true_boxes:
+            ax.add_patch(patches.Rectangle((x1, y1), x2 - x1, y2 - y1, edgecolor=LABEL_COLOUR,
+                                           facecolor="none", linewidth=2))
+            ax.text(x1, y1 - 4, class_names[class_id], color="white", fontsize=7,
+                    backgroundcolor=LABEL_COLOUR)
+        for conf, class_id, (x1, y1, x2, y2) in kept:
+            ax.add_patch(patches.Rectangle((x1, y1), x2 - x1, y2 - y1, edgecolor=PREDICTION_COLOUR,
+                                           facecolor="none", linewidth=2, linestyle="--"))
+            ax.text(x1, y2 + 14, f"{class_names[class_id]} {conf:.2f}", color="white", fontsize=7,
+                    backgroundcolor=PREDICTION_COLOUR)
+        ax.set_title(f"{kind}\n{image_path.name[:40]}", fontsize=9)
+
+    fig.legend(handles=[patches.Patch(edgecolor=LABEL_COLOUR, facecolor="none", linewidth=2,
+                                      label="labelled box"),
+                        patches.Patch(edgecolor=PREDICTION_COLOUR, facecolor="none", linewidth=2,
+                                      linestyle="--", label="predicted box (confidence)")],
+               loc="lower center", ncol=2)
+    plt.tight_layout(rect=(0, 0.05, 1, 1))
+    plt.show()
