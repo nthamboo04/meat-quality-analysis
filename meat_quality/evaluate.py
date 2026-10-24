@@ -6,9 +6,9 @@ Run from the repository root::
     python meat_quality/evaluate.py --conf 0.25 --split test
     python meat_quality/evaluate.py --agnostic     # class-agnostic NMS
 
-The trained weights are not stored in Git. Copy best.pt from your Google Drive
-(meat-quality-runs/yolo11n_736/weights/best.pt) to the same path under runs/
-in this repository, or pass a different path with --weights.
+The trained weights are not stored in Git. By default the selected model,
+runs/yolo11n_736_scale0.2/weights/best.pt, is used; copy it there from the
+training output, or pass a different path with --weights.
 """
 
 # Step 1: Import libraries
@@ -20,14 +20,16 @@ from ultralytics import YOLO
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = REPO_ROOT / "data" / "pork-rasher-error-packaging-4"
-DEFAULT_WEIGHTS = REPO_ROOT / "runs" / "yolo11n_736" / "weights" / "best.pt"
+# Selected model: YOLO11n at 736 px trained with scale augmentation 0.2.
+DEFAULT_WEIGHTS = REPO_ROOT / "runs" / "yolo11n_736_scale0.2" / "weights" / "best.pt"
 
 parser = argparse.ArgumentParser(description="Evaluate a trained YOLO model.")
 parser.add_argument("--weights", type=Path, default=DEFAULT_WEIGHTS,
                     help="path to the trained .pt file")
 parser.add_argument("--split", default="valid", choices=["train", "valid", "test"],
                     help="which split to evaluate on (default valid)")
-# Default: peak of the yolo11n_736 model's F1-confidence curve on the validation set.
+# Default: peak of the first yolo11n_736 model's F1-confidence curve on the
+# validation set. Step 6 also chooses a separate threshold for each class.
 parser.add_argument("--conf", type=float, default=0.22,
                     help="confidence threshold: boxes below this are ignored (default 0.22)")
 parser.add_argument("--imgsz", type=int, default=736,
@@ -239,3 +241,65 @@ for class_id, class_name in enumerate(class_names):
 print()
 print("=== Results with the per-class thresholds ===")
 print_results(*match(best_thresholds))
+
+# Step 7: Pass or fail each tray
+# A tray (image) FAILS inspection if the model detects at least one defect of
+# any class above that class's threshold, and PASSES otherwise. Its true
+# state is DEFECTIVE if it has at least one labelled box, and GOOD if its
+# label file is empty. Where the boxes are, and which class they are, does not
+# matter here: any detected defect fails the tray.
+#
+# The two possible errors have very different costs:
+#   false pass: a defective tray is let through to the customer;
+#   false fail: a good tray is rejected (wasted product, or a manual re-check).
+
+
+def pass_fail(thresholds):
+    """Count tray-level outcomes for the given per-class thresholds.
+
+    Returns:
+        (correct_fails, false_passes, false_fails, correct_passes), where a
+        "fail" is a tray the model rejects and a "pass" one it lets through.
+    """
+    correct_fails = false_passes = false_fails = correct_passes = 0
+    for true_boxes, predictions in images:
+        defective = len(true_boxes) > 0
+        rejected = any(conf >= thresholds[cls] for conf, cls, _ in predictions)
+        if defective and rejected:
+            correct_fails += 1
+        elif defective:
+            false_passes += 1
+        elif rejected:
+            false_fails += 1
+        else:
+            correct_passes += 1
+    return correct_fails, false_passes, false_fails, correct_passes
+
+
+n_defective = sum(1 for true_boxes, _ in images if true_boxes)
+n_good = len(images) - n_defective
+print()
+print(f"=== Pass/fail per tray: {len(images)} trays, {n_defective} defective, {n_good} good ===")
+
+# Baseline: reject every tray. It never lets a defective tray through, but
+# rejects every good one. Because most trays in this dataset are defective,
+# its accuracy is already high, so accuracy alone is a misleading measure.
+print(f"Baseline 'reject every tray': 0 false passes, {n_good} false fails, "
+      f"accuracy {n_defective / len(images):.2f}")
+print()
+
+
+def print_pass_fail_row(label, thresholds):
+    """Print one row of the pass/fail table for the given thresholds."""
+    correct_fails, false_passes, false_fails, correct_passes = pass_fail(thresholds)
+    accuracy = (correct_fails + correct_passes) / len(images)
+    print(f"{label:>22s}{false_passes:>8d}/{n_defective:<4d}{false_fails:>8d}/{n_good:<4d}"
+          f"{accuracy:>10.2f}")
+
+
+print(f"{'thresholds':>22s}{'false passes':>13s}{'false fails':>12s}{'accuracy':>10s}")
+print_pass_fail_row("per-class (step 6)", best_thresholds)
+# One threshold for every class, from low (rejects more trays, fewer false
+# passes) to high (lets more trays through, fewer false fails).
+for threshold in [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50, 0.60, 0.70]:
+    print_pass_fail_row(f"all classes {threshold:.2f}", [threshold] * num_classes)
