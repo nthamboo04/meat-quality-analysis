@@ -3,29 +3,30 @@ Computer vision method that analyses images of packaged pork rashers.
 
 ## Repository layout
 
-```
 meat_quality/   project source code (Python package)
+    data.py       load and explore the dataset (labels, class counts, examples)
+    metrics.py    match predicted to labelled boxes; tray pass/fail counts
+    train.py      train a YOLO model (on a GPU: Google Colab or Kaggle)
+    evaluate.py   evaluate a trained model on a dataset split
+    benchmark.py  time predictions per tray; model size and FLOPs
 data/           downloaded dataset (git-ignored)
-```
+runs/           trained models and training outputs (git-ignored)
+results.txt     final validation output of each training run
 
 ## Setup
 
-Developed with Python 3.12. Create a virtual environment and install the
-dependencies:
+Developed with Python 3.12. Create a virtual environment and install the following dependencies:
 
 ```bash
-python -m venv C:\Users\<you>\venvs\meat      # any folder; see note below
+python -m venv C:\Users\<you>\venvs\meat
 C:\Users\<you>\venvs\meat\Scripts\activate    # macOS/Linux: source <folder>/bin/activate
 pip install -r requirements.txt
+pip install -e .        # makes the meat_quality package importable from any folder
 ```
 
-On Windows, keep the environment in a short path outside OneDrive. PyTorch
-contains deeply nested files that exceed Windows' 260-character path limit
-inside long folders (such as the Microsoft Store Python's package folder),
-and OneDrive would otherwise sync thousands of package files.
+On Windows, keep the environment in a short path outside OneDrive. PyTorch contains files that exceed Windows' 260-character path limit inside long folders, and OneDrive would sync thousands of package files.
 
-Training was run on Google Colab (Tesla T4 GPU, Python 3.13,
-Ultralytics 8.4.183, torch 2.11.0).
+Training was run on Google Colab and Kaggle (Tesla T4 GPU, Python 3.13, Ultralytics 8.4.183, torch 2.11.0).
 
 ## Getting the data
 
@@ -52,6 +53,22 @@ version:
 The dataset contains 3549 images at 720x540 (3349 train / 120 valid / 80
 test) with five classes: `loose-meat`, `packaging-error`, `twisted-meat`,
 `unsealed` and `wrinkle`.
+
+## Usage
+
+Run from the repository root with the environment active.
+
+```bash
+python meat_quality/data.py          # class counts, example images, label-count charts
+python meat_quality/train.py --scale 0.2       # train the selected model (needs a GPU)
+python meat_quality/evaluate.py      # evaluate the selected model on the validation set
+python meat_quality/evaluate.py --split test   # final check on the test set
+python meat_quality/benchmark.py     # time per tray, model size and FLOPs
+```
+
+The selected model is YOLO11n at 736 px trained with scale augmentation 0.2.
+Its weights are expected at `runs/yolo11n_736_scale0.2/weights/best.pt`
+(not stored in Git). Each script lists its options with `--help`.
 
 ## Data licence
 

@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "meat-quality"
+version = "0.1.0"
+description = "Computer-vision inspection of packaged pork rasher trays with YOLO."
+requires-python = ">=3.10"
+
+[tool.setuptools]
+packages = ["meat_quality"]
