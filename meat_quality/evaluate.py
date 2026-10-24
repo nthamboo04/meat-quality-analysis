@@ -117,7 +117,7 @@ def predict_split(model: YOLO, image_paths: list[Path], imgsz: int,
     return images
 
 
-def print_box_results(counts: MatchCounts, class_names: list[str]) -> None:
+def print_box_results(counts: MatchCounts, class_names: list[str]):
     """Print TP/FP/FN, precision and recall per class, and the FP reasons.
 
     Precision = TP / (TP + FP): the share of predicted boxes that are correct.
@@ -144,7 +144,7 @@ def print_box_results(counts: MatchCounts, class_names: list[str]) -> None:
 
 
 def print_tray_results(images: list[ImageResult], per_class_thresholds: list[float],
-                       num_classes: int) -> None:
+                       num_classes: int):
     """Print tray-level pass/fail results for a range of thresholds.
 
     A false pass (defective tray let through) is the costly error for food
@@ -160,7 +160,7 @@ def print_tray_results(images: list[ImageResult], per_class_thresholds: list[flo
           f"accuracy {n_defective / len(images):.2f}")
     print()
 
-    def print_row(label: str, thresholds: list[float]) -> None:
+    def print_row(label: str, thresholds: list[float]):
         trays = count_trays(images, thresholds)
         accuracy = (trays.correct_fails + trays.correct_passes) / len(images)
         print(f"{label:>22s}{trays.false_passes:>8d}/{n_defective:<4d}"
@@ -231,7 +231,7 @@ def plot_tray_mistakes(mistakes: list[tuple[str, ImageResult]],
     return fig
 
 
-def main(argv: list[str] | None = None) -> None:
+def main(argv: list[str] | None = None):
     """Run the full evaluation and print the results."""
     args = parse_args(argv)
     if not args.weights.exists():

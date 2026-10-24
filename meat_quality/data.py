@@ -239,8 +239,8 @@ def plot_label_counts(class_names: list[str], counts: dict[str, tuple[list[int],
     return fig
 
 
-def main() -> None:
-    """Print dataset statistics and show label-count charts."""
+def main():
+    """Print the class names and image counts, and show label-count charts."""
     class_names = load_class_names()
     num_classes = len(class_names)
     print("class_names:", class_names)
@@ -251,12 +251,6 @@ def main() -> None:
         print(f"{split}: {n_images} images")
 
     counts = {split: count_labels(split, num_classes) for split in SPLITS}
-    print()
-    print(f"{'class':16s}" + "".join(f"{split:>8s}" for split in SPLITS))
-    for class_id, class_name in enumerate(class_names):
-        print(f"{class_name:16s}" + "".join(f"{counts[split][0][class_id]:8d}" for split in SPLITS))
-    print(f"{'(no defect)':16s}" + "".join(f"{counts[split][1]:8d}" for split in SPLITS))
-
     plot_label_counts(class_names, counts, image_counts)
     plt.show()
 

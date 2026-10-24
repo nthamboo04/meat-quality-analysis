@@ -126,7 +126,7 @@ def classify_false_positive(prediction: PredictedBox, labels: list[LabelledBox],
 
 
 def match_image(image: ImageResult, thresholds: list[float], counts: MatchCounts,
-                iou_threshold: float = 0.5) -> None:
+                iou_threshold: float = 0.5):
     """Match one image's predictions to its labels and add to ``counts``.
 
     Args:

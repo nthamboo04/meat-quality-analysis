@@ -70,7 +70,7 @@ def run_name(model: str, imgsz: int, scale: float) -> str:
     return name
 
 
-def main(argv: list[str] | None = None) -> None:
+def main(argv: list[str] | None = None):
     """Train a model with the given settings and save the results under runs/."""
     args = parse_args(argv)
     model = YOLO(args.model)

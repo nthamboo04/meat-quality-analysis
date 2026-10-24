@@ -126,7 +126,7 @@ def model_label(weights: Path) -> str:
     return weights.parent.parent.name if weights.parent.name == "weights" else weights.stem
 
 
-def main(argv: list[str] | None = None) -> None:
+def main(argv: list[str] | None = None):
     """Benchmark each model and print a comparison table."""
     args = parse_args(argv)
     missing = [str(w) for w in args.weights if not w.exists()]
