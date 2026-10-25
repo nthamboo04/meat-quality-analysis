@@ -10,9 +10,12 @@ meat_quality/   project source code
     train.py      train a YOLO model (on a GPU: Google Colab or Kaggle)
     evaluate.py   evaluate a trained model on a dataset split
     benchmark.py  time predictions per tray; model size and FLOPs
+tests/          pytest tests for data.py and metrics.py
+docs/           HTML code documentation
 data/           downloaded dataset (git-ignored)
 runs/           trained models and training outputs (git-ignored)
 results.txt     final validation output of each training run
+test_report.txt latest pytest results
 ```
 
 ## Setup
@@ -28,7 +31,7 @@ pip install -e .        # makes the meat_quality package importable from any fol
 
 On Windows, keep the environment in a short path outside OneDrive. PyTorch contains files that exceed Windows' 260-character path limit inside long folders, and OneDrive would sync thousands of package files.
 
-Training was run on Google Colab and Kaggle (Tesla T4 GPU, Python 3.13, Ultralytics 8.4.183, torch 2.11.0).
+Training was run on Google Colab and Kaggle (Tesla T4 GPU, Python 3.13, Ultralytics 8.4.183 (Colab)/8.4.184 (Kaggle), torch 2.11.0).
 
 ## Getting the data
 
@@ -61,7 +64,26 @@ python meat_quality/benchmark.py     # time per tray, model size and FLOPs
 
 The selected model is YOLO11n at 736 px trained with scale augmentation 0.2. Its weights are expected at `runs/yolo11n_736_scale0.2/weights/best.pt` (not stored in Git). Each script lists its options with `--help`.
 
+## Tests and documentation
+
+Run the tests from the repository root:
+
+```bash
+pytest tests -v
+```
+
+The latest results are saved in `test_report.txt`. To regenerate it in PowerShell: `pytest tests -v | Out-File -Encoding utf8 test_report.txt`.
+
+The code documentation is generated from the docstrings with pdoc. Open `docs/index.html` in a browser. To regenerate it after changing the code:
+
+```bash
+pdoc meat_quality -o docs --docformat google
+```
+
 ## Data licence
 
 "Pork Rasher Error(Packaging)" v4, provided by a Roboflow user via
 [Roboflow Universe](https://universe.roboflow.com/hello-2aqe0/pork-rasher-error-packaging), is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The code in this repository is licensed separately (see `LICENSE`).
+
+## AI Usage
+AI assistance (Claude) was used in various aspects during development. For more information, see the AI reflection in the report.

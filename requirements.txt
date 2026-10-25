@@ -1,4 +1,3 @@
-# Numerical / ML / CV
 numpy
 pandas
 matplotlib
@@ -6,8 +5,6 @@ opencv-python
 pyyaml
 scikit-learn
 ultralytics
-
-# Workflow
 jupyter
 pytest
 pdoc

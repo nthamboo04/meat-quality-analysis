@@ -1,0 +1,73 @@
+﻿Evaluating best.pt on 80 test images
+
+=== One threshold for all classes: confidence >= 0.22 ===
+Matching rule: same class and IoU >= 0.5
+class            labelled predicted   TP   FP   FN  precision  recall
+loose-meat              3         0    0    0    3          -    0.00
+packaging-error        23        30   10   20   13       0.33    0.43
+twisted-meat            4         0    0    0    4          -    0.00
+unsealed               49        47   40    7    9       0.85    0.82
+wrinkle                 0         0    0    0    0          -       -
+total                  79        77   50   27   29
+
+Why the false positives are wrong:
+class                 duplicate    wrong class  poor location     background
+loose-meat                    0              0              0              0
+packaging-error               3              0             12              5
+twisted-meat                  0              0              0              0
+unsealed                      2              1              2              2
+wrinkle                       0              0              0              0
+
+=== Best threshold for each class (highest F1) ===
+class            threshold    F1
+loose-meat            0.05  0.86
+packaging-error       0.22  0.38
+twisted-meat          0.05  0.00
+unsealed              0.29  0.86
+wrinkle                  -     -   (no labelled boxes; kept 0.22)
+
+=== Results with the per-class thresholds ===
+class            labelled predicted   TP   FP   FN  precision  recall
+loose-meat              3         4    3    1    0       0.75    1.00
+packaging-error        23        30   10   20   13       0.33    0.43
+twisted-meat            4         1    0    1    4       0.00    0.00
+unsealed               49        44   40    4    9       0.91    0.82
+wrinkle                 0         0    0    0    0          -       -
+total                  79        79   53   26   26
+
+Why the false positives are wrong:
+class                 duplicate    wrong class  poor location     background
+loose-meat                    0              0              0              1
+packaging-error               3              0             12              5
+twisted-meat                  0              0              0              1
+unsealed                      0              1              2              1
+wrinkle                       0              0              0              0
+
+=== Pass/fail per tray: 80 trays, 68 defective, 12 good ===
+Baseline 'reject every tray': 0 false passes, 12 false fails, accuracy 0.85
+
+            thresholds false passes false fails  accuracy
+    per-class (step 6)      10/68         2/12        0.85
+      all classes 0.05       4/68         6/12        0.88
+      all classes 0.10       7/68         4/12        0.86
+      all classes 0.15       9/68         2/12        0.86
+      all classes 0.20      10/68         2/12        0.85
+      all classes 0.25      11/68         1/12        0.85
+      all classes 0.30      11/68         1/12        0.85
+      all classes 0.40      11/68         1/12        0.85
+      all classes 0.50      19/68         1/12        0.75
+      all classes 0.60      28/68         1/12        0.64
+      all classes 0.70      34/68         1/12        0.56
+
+=== Wrongly passed or failed trays at confidence >= 0.1 ===
+FALSE PASS: frame_with_red_121_jpg.rf.ad75eafa25397a05aab1e53d4ef575a4.jpg
+FALSE PASS: frame_with_red_1695_jpg.rf.0fcc67310f01b5c3361403020eaa6afa.jpg
+FALSE FAIL: frame_with_red_2248_jpg.rf.7c29cf90087a6d4ca2ad1307d8f513f5.jpg
+FALSE PASS: frame_with_red_2317_jpg.rf.4abeaf71220b626a1722542689671962.jpg
+FALSE PASS: frame_with_red_3117_jpg.rf.f7143bc7a934176ecafb9727e3c2642b.jpg
+FALSE PASS: frame_with_red_3381_jpg.rf.4c8e152ca96d5379f50edec0a07be4ff.jpg
+FALSE FAIL: frame_with_red_378_jpg.rf.2dd94f946948c9b3fd658453b1f66659.jpg
+FALSE FAIL: frame_with_red_4088_jpg.rf.b5f45a560eeca8215eaa6d0d8560f23d.jpg
+FALSE PASS: frame_with_red_437_jpg.rf.1d88cff92b7d5f81c694265df9667631.jpg
+FALSE FAIL: frame_with_red_7471_jpg.rf.d9733c9a3c8e75ec75d4c6c9f744a199.jpg
+FALSE PASS: frame_with_red_7506_jpg.rf.c7c42fbdaa7e02d1a127e7257a932047.jpg
