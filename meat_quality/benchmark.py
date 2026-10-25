@@ -43,8 +43,7 @@ PASS_CONF = 0.10
 """Confidence threshold used while timing (the pass/fail threshold). It
 affects only how many boxes post-processing handles."""
 
-
-def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+def parse_args(argv=None):
     """Read the command-line options."""
     parser = argparse.ArgumentParser(description="Time model predictions per tray.")
     parser.add_argument("--weights", type=Path, nargs="+", default=DEFAULT_WEIGHTS,
@@ -61,9 +60,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
                         help="untimed predictions before timing starts (default 10)")
     return parser.parse_args(argv)
 
-
-def benchmark_model(weights: Path, images: list, imgsz: int, device: str,
-                    repeats: int, warmup: int) -> dict:
+def benchmark_model(weights, images, imgsz, device, repeats, warmup):
     """Time a model predicting one image at a time, and measure its size.
 
     Args:
@@ -91,7 +88,7 @@ def benchmark_model(weights: Path, images: list, imgsz: int, device: str,
         model.predict(images[i % len(images)], **predict)
 
     totals, pre, infer, post = [], [], [], []
-    for _ in range(repeats):
+    for i in range(repeats):
         for image in images:
             start = time.perf_counter()
             result = model.predict(image, **predict)[0]
@@ -120,13 +117,11 @@ def benchmark_model(weights: Path, images: list, imgsz: int, device: str,
         "gflop_per_s": gflops / (infer_ms / 1000) if infer_ms > 0 else float("nan"),
     }
 
-
-def model_label(weights: Path) -> str:
+def model_label(weights):
     """Short name for a model: its run folder, e.g. ``yolo11n_736_scale0.2``."""
     return weights.parent.parent.name if weights.parent.name == "weights" else weights.stem
 
-
-def main(argv: list[str] | None = None):
+def main(argv=None):
     """Benchmark each model and print a comparison table."""
     args = parse_args(argv)
     missing = [str(w) for w in args.weights if not w.exists()]
@@ -153,7 +148,6 @@ def main(argv: list[str] | None = None):
               f"{r['file_mb']:10.1f}{r['median_ms']:10.1f}{r['p95_ms']:8.1f}"
               f"{r['trays_per_s']:9.1f}{r['pre_ms']:8.1f}{r['infer_ms']:9.1f}"
               f"{r['post_ms']:8.1f}{r['gflop_per_s']:9.1f}")
-
 
 if __name__ == "__main__":
     main()

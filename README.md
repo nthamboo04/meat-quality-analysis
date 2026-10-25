@@ -52,7 +52,7 @@ The dataset contains 3549 images at 720x540 (3349 train / 120 valid / 80 test) w
 Run from the repository root with the environment active.
 
 ```bash
-python meat_quality/data.py          # class counts and label-count charts
+python meat_quality/data.py          # label-count charts
 python meat_quality/train.py --scale 0.2       # train the selected model
 python meat_quality/evaluate.py      # evaluate the selected model on the validation set
 python meat_quality/evaluate.py --split test   # final check on the test set

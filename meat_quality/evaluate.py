@@ -35,7 +35,7 @@ from ultralytics import YOLO
 
 from meat_quality.data import (DATA_DIR, SPLITS, label_path_for, list_images, load_class_names,
                                read_labels, to_pixel_box)
-from meat_quality.metrics import (FP_REASONS, ImageResult, LabelledBox, MatchCounts, PredictedBox,
+from meat_quality.metrics import (FP_REASONS, ImageResult, LabelledBox, PredictedBox,
                                   best_threshold_per_class, count_trays, match_all)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -59,11 +59,10 @@ IOU_THRESHOLD = 0.5
 PASS_FAIL_SWEEP = (0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50, 0.60, 0.70)
 """Single thresholds compared in the tray pass/fail table."""
 
-LABEL_COLOUR = "#2a78d6"       # labelled boxes: solid blue
-PREDICTION_COLOUR = "#eb6834"  # predicted boxes: dashed orange
+LABEL_COLOUR = "#2a78d6"
+PREDICTION_COLOUR = "#eb6834" 
 
-
-def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+def parse_args(argv=None):
     """Read the command-line options."""
     parser = argparse.ArgumentParser(description="Evaluate a trained YOLO model.")
     parser.add_argument("--weights", type=Path, default=DEFAULT_WEIGHTS,
@@ -83,9 +82,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
                              f"(default {DEFAULT_PASS_CONF})")
     return parser.parse_args(argv)
 
-
-def predict_split(model: YOLO, image_paths: list[Path], imgsz: int,
-                  agnostic: bool = False) -> list[ImageResult]:
+def predict_split(model, image_paths, imgsz, agnostic=False):
     """Run the model on every image and pair its predictions with the labels.
 
     The model is run once at ``MIN_CONF``. Any higher threshold can then be
@@ -116,8 +113,7 @@ def predict_split(model: YOLO, image_paths: list[Path], imgsz: int,
         images.append(ImageResult(image_path, labels, predictions))
     return images
 
-
-def print_box_results(counts: MatchCounts, class_names: list[str]):
+def print_box_results(counts, class_names):
     """Print TP/FP/FN, precision and recall per class, and the FP reasons.
 
     Precision = TP / (TP + FP): the share of predicted boxes that are correct.
@@ -143,8 +139,7 @@ def print_box_results(counts: MatchCounts, class_names: list[str]):
               + "".join(f"{counts.fp_by_reason[r][class_id]:15d}" for r in FP_REASONS))
 
 
-def print_tray_results(images: list[ImageResult], per_class_thresholds: list[float],
-                       num_classes: int):
+def print_tray_results(images, per_class_thresholds, num_classes):
     """Print tray-level pass/fail results for a range of thresholds.
 
     A false pass (defective tray let through) is the costly error for food
@@ -160,7 +155,7 @@ def print_tray_results(images: list[ImageResult], per_class_thresholds: list[flo
           f"accuracy {n_defective / len(images):.2f}")
     print()
 
-    def print_row(label: str, thresholds: list[float]):
+    def print_row(label, thresholds):
         trays = count_trays(images, thresholds)
         accuracy = (trays.correct_fails + trays.correct_passes) / len(images)
         print(f"{label:>22s}{trays.false_passes:>8d}/{n_defective:<4d}"
@@ -173,8 +168,7 @@ def print_tray_results(images: list[ImageResult], per_class_thresholds: list[flo
         print_row(f"all classes {threshold:.2f}", [threshold] * num_classes)
 
 
-def find_tray_mistakes(images: list[ImageResult],
-                       pass_conf: float) -> list[tuple[str, ImageResult]]:
+def find_tray_mistakes(images, pass_conf):
     """Find the trays wrongly passed or failed at a single threshold.
 
     Args:
@@ -194,9 +188,7 @@ def find_tray_mistakes(images: list[ImageResult],
             mistakes.append(("FALSE FAIL", image._replace(predictions=kept)))
     return mistakes
 
-
-def plot_tray_mistakes(mistakes: list[tuple[str, ImageResult]],
-                       class_names: list[str]) -> plt.Figure:
+def plot_tray_mistakes(mistakes, class_names):
     """Draw each wrongly passed or failed tray with its labelled and predicted boxes.
 
     Labelled boxes are solid blue; predicted boxes are dashed orange with their
@@ -230,8 +222,7 @@ def plot_tray_mistakes(mistakes: list[tuple[str, ImageResult]],
     fig.tight_layout(rect=(0, 0.05, 1, 1))
     return fig
 
-
-def main(argv: list[str] | None = None):
+def main(argv=None):
     """Run the full evaluation and print the results."""
     args = parse_args(argv)
     if not args.weights.exists():
@@ -286,7 +277,6 @@ def main(argv: list[str] | None = None):
     if mistakes:
         plot_tray_mistakes(mistakes, class_names)
         plt.show()
-
 
 if __name__ == "__main__":
     main()

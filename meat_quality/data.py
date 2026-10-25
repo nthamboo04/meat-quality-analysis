@@ -17,7 +17,7 @@ where ``class_id`` is a zero-based index into the class names and the four box
 values are fractions of the image width and height, between 0 and 1. An empty
 label file means the tray has no labelled defect.
 
-Run as a script to print the class counts and show a label-count chart::
+Run as a script to show the label-count chart for each split::
 
     python meat_quality/data.py
 """
@@ -37,7 +37,6 @@ SPLITS = ("train", "valid", "test")
 Box = tuple[float, float, float, float]
 """A box as (x1, y1, x2, y2) in pixels: top-left and bottom-right corners."""
 
-
 class Label(NamedTuple):
     """One line of a YOLO label file, in normalised coordinates (0 to 1)."""
 
@@ -47,8 +46,7 @@ class Label(NamedTuple):
     width: float
     height: float
 
-
-def load_class_names(data_dir: Path = DATA_DIR) -> list[str]:
+def load_class_names(data_dir=DATA_DIR):
     """Read the class names from the dataset's data.yaml.
 
     Args:
@@ -71,8 +69,7 @@ def load_class_names(data_dir: Path = DATA_DIR) -> list[str]:
         raise ValueError(f"data.yaml: nc={config['nc']} but {len(names)} names are listed")
     return names
 
-
-def list_images(split: str, data_dir: Path = DATA_DIR) -> list[Path]:
+def list_images(split, data_dir=DATA_DIR):
     """List a split's image files, sorted by name.
 
     Args:
@@ -93,8 +90,7 @@ def list_images(split: str, data_dir: Path = DATA_DIR) -> list[Path]:
         raise FileNotFoundError(f"image folder not found: {image_dir}")
     return sorted(image_dir.glob("*.jpg"))
 
-
-def label_path_for(image_path: Path) -> Path:
+def label_path_for(image_path):
     """Return the label file that belongs to an image.
 
     Images live in ``<split>/images/`` and their labels in ``<split>/labels/``,
@@ -102,8 +98,7 @@ def label_path_for(image_path: Path) -> Path:
     """
     return image_path.parent.parent / "labels" / f"{image_path.stem}.txt"
 
-
-def parse_label_line(line: str) -> Label:
+def parse_label_line(line):
     """Parse one line of a YOLO label file.
 
     Args:
@@ -126,12 +121,11 @@ def parse_label_line(line: str) -> Label:
         raise ValueError(f"not a valid label line: {line!r}") from None
     if class_id < 0:
         raise ValueError(f"negative class id: {line!r}")
-    if any(not 0.0 <= v <= 1.0 for v in values):
+    if any(not 0 <= v <= 1 for v in values):
         raise ValueError(f"box value outside [0, 1]: {line!r}")
     return Label(class_id, *values)
 
-
-def read_labels(label_path: Path) -> list[Label]:
+def read_labels(label_path):
     """Read every labelled box in a label file.
 
     Blank lines are skipped. A missing final newline (as in the Roboflow
@@ -141,11 +135,11 @@ def read_labels(label_path: Path) -> list[Label]:
         label_path: Path to a YOLO ``.txt`` label file.
 
     Returns:
-        The labels in file order; empty if the tray has no labelled defect.
+        The labels in file order. Empty if the tray has no labelled defect.
 
     Raises:
         FileNotFoundError: If the label file does not exist.
-        ValueError: If a line is malformed; the message names the file and line.
+        ValueError: If a line is malformed.
     """
     labels = []
     for line_number, line in enumerate(label_path.read_text().splitlines(), start=1):
@@ -157,8 +151,7 @@ def read_labels(label_path: Path) -> list[Label]:
             raise ValueError(f"{label_path}, line {line_number}: {err}") from None
     return labels
 
-
-def to_pixel_box(label: Label, img_width: int, img_height: int) -> Box:
+def to_pixel_box(label, img_width, img_height):
     """Convert a normalised YOLO label to a pixel box.
 
     YOLO stores the box centre and size as fractions of the image; plotting and
@@ -177,8 +170,7 @@ def to_pixel_box(label: Label, img_width: int, img_height: int) -> Box:
     return (x_centre - width / 2, y_centre - height / 2,
             x_centre + width / 2, y_centre + height / 2)
 
-
-def count_labels(split: str, num_classes: int, data_dir: Path = DATA_DIR) -> tuple[list[int], int]:
+def count_labels(split, num_classes, data_dir=DATA_DIR):
     """Count the labelled boxes of each class in a split.
 
     Args:
@@ -207,50 +199,38 @@ def count_labels(split: str, num_classes: int, data_dir: Path = DATA_DIR) -> tup
             box_counts[label.class_id] += 1
     return box_counts, n_no_defect
 
-
-def plot_label_counts(class_names: list[str], counts: dict[str, tuple[list[int], int]],
-                      image_counts: dict[str, int]) -> plt.Figure:
+def plot_label_counts(class_names, counts, image_counts):
     """Draw one bar chart of label counts per split.
 
-    Each split gets its own y-axis because the splits are very different
-    sizes (train is about 40 times bigger than test).
+    Each split gets its own y-axis because the splits are very different sizes.
 
     Args:
         class_names: Class names, indexed by class id.
-        counts: ``counts[split]`` is the ``(box_counts, n_no_defect)`` result
-            of ``count_labels`` for that split.
+        counts: ``counts[split]`` is the ``(box_counts, n_no_defect)`` result of ``count_labels`` for that split.
         image_counts: Number of images in each split, for the panel titles.
 
     Returns:
         The figure, with one panel per split.
     """
-    bar_labels = class_names + ["(no defect)"]
-    bar_colours = ["#2a78d6"] * len(class_names) + ["#a3a29b"]  # defects blue, no defect grey
 
-    fig, axes = plt.subplots(1, len(counts), figsize=(15, 4.5))
+    bar_labels = class_names + ["(no defect)"]
+    fig, axes = plt.subplots(1, len(counts), figsize=(12, 5))
+
     for ax, (split, (box_counts, n_no_defect)) in zip(axes, counts.items()):
-        bars = ax.bar(bar_labels, box_counts + [n_no_defect], color=bar_colours)
+        bars = ax.bar(bar_labels, box_counts + [n_no_defect])
         ax.bar_label(bars, padding=2)
         ax.set_title(f"{split} ({image_counts[split]} images)")
-        ax.set_ylabel("number of boxes / images")
+        ax.set_ylabel("number of images")
         ax.tick_params(axis="x", rotation=45)
         ax.spines[["top", "right"]].set_visible(False)
     fig.tight_layout()
     return fig
 
-
 def main():
-    """Print the class names and image counts, and show label-count charts."""
+    """Show the label-count charts for every split."""
     class_names = load_class_names()
-    num_classes = len(class_names)
-    print("class_names:", class_names)
-    print("num_classes:", num_classes)
-
     image_counts = {split: len(list_images(split)) for split in SPLITS}
-    for split, n_images in image_counts.items():
-        print(f"{split}: {n_images} images")
-
-    counts = {split: count_labels(split, num_classes) for split in SPLITS}
+    counts = {split: count_labels(split, len(class_names)) for split in SPLITS}
     plot_label_counts(class_names, counts, image_counts)
     plt.show()
 

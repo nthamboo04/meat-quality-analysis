@@ -1,18 +1,15 @@
 """Compare predicted boxes with labelled boxes, per box and per tray.
 
 Box-level matching follows the usual object-detection rule: a predicted box is
-a correct detection (true positive, TP) if it has the same class as a labelled
-box and overlaps it by at least an IoU threshold. Each labelled box can be
-matched only once, so predictions are matched most confident first.
-Unmatched predictions are false positives (FP) and unmatched labelled boxes
-are misses (false negatives, FN).
+a correct detection if it has the same class as a labelled box and overlaps it 
+by at least an IoU threshold. Each labelled box can be matched only once, so 
+predictions are matched most confident first. Unmatched predictions are false 
+positives and unmatched labelled boxes are misses.
 
-Tray-level decisions: a tray fails inspection if any predicted box is above
-its class's confidence threshold, and is truly defective if it has at least
-one labelled box.
+A tray fails inspection if any predicted box is above its class's confidence 
+threshold, and is truly defective if it has at least one labelled box.
 
-All boxes are (x1, y1, x2, y2) in pixels. These functions do not depend on the
-model, so they can be tested with hand-made boxes.
+All boxes are (x1, y1, x2, y2) in pixels.
 """
 
 from dataclasses import dataclass, field
@@ -24,13 +21,11 @@ from meat_quality.data import Box
 FP_REASONS = ("duplicate", "wrong class", "poor location", "background")
 """Categories of false positive, as returned by ``classify_false_positive``."""
 
-
 class LabelledBox(NamedTuple):
     """A labelled (true) box."""
 
     class_id: int
     box: Box
-
 
 class PredictedBox(NamedTuple):
     """A box predicted by the model."""
@@ -39,14 +34,12 @@ class PredictedBox(NamedTuple):
     class_id: int
     box: Box
 
-
 class ImageResult(NamedTuple):
-    """The labelled and predicted boxes for one image (tray)."""
+    """The labelled and predicted boxes for one image."""
 
     image_path: Path
     labels: list[LabelledBox]
     predictions: list[PredictedBox]
-
 
 @dataclass
 class MatchCounts:
@@ -58,22 +51,20 @@ class MatchCounts:
     fp_by_reason: dict[str, list[int]] = field(default_factory=dict)
 
     @classmethod
-    def zeros(cls, num_classes: int) -> "MatchCounts":
+    def zeros(cls, num_classes):
         """All-zero counts for ``num_classes`` classes."""
         return cls([0] * num_classes, [0] * num_classes, [0] * num_classes,
                    {reason: [0] * num_classes for reason in FP_REASONS})
-
 
 class TrayCounts(NamedTuple):
     """Tray-level outcomes: "fail" = rejected by the model, "pass" = let through."""
 
     correct_fails: int
-    false_passes: int   # defective tray let through: the costly error
+    false_passes: int   # defective tray let through
     false_fails: int    # good tray rejected
     correct_passes: int
 
-
-def iou(box_a: Box, box_b: Box) -> float:
+def iou(box_a, box_b):
     """Intersection over union of two boxes.
 
     Args:
@@ -92,9 +83,7 @@ def iou(box_a: Box, box_b: Box) -> float:
     union = area_a + area_b - intersection
     return intersection / union if union > 0 else 0.0
 
-
-def classify_false_positive(prediction: PredictedBox, labels: list[LabelledBox],
-                            matched: list[bool], iou_threshold: float = 0.5) -> str:
+def classify_false_positive(prediction, labels, matched, iou_threshold=0.5):
     """Work out why an unmatched predicted box is a false positive.
 
     Args:
@@ -107,10 +96,9 @@ def classify_false_positive(prediction: PredictedBox, labels: list[LabelledBox],
     Returns:
         One of ``FP_REASONS``:
         "duplicate" if it overlaps (IoU >= threshold) an already-matched label
-        of the same class; "poor location" if it overlaps a label of the same
-        class, but by less than the threshold; "wrong class" if it overlaps a
-        label of another class by at least the threshold; otherwise
-        "background".
+        of the same class. "poor location" if it overlaps a label of the same
+        class, but by less than the threshold. "wrong class" if it overlaps a
+        label of another class by at least the threshold. Otherwise "background".
     """
     reason = "background"
     for label, is_matched in zip(labels, matched):
@@ -124,9 +112,7 @@ def classify_false_positive(prediction: PredictedBox, labels: list[LabelledBox],
             reason = "wrong class"
     return reason
 
-
-def match_image(image: ImageResult, thresholds: list[float], counts: MatchCounts,
-                iou_threshold: float = 0.5):
+def match_image(image, thresholds, counts, iou_threshold=0.5):
     """Match one image's predictions to its labels and add to ``counts``.
 
     Args:
@@ -159,9 +145,7 @@ def match_image(image: ImageResult, thresholds: list[float], counts: MatchCounts
         if not is_matched:
             counts.fn[label.class_id] += 1
 
-
-def match_all(images: list[ImageResult], thresholds: list[float],
-              iou_threshold: float = 0.5) -> MatchCounts:
+def match_all(images, thresholds, iou_threshold=0.5):
     """Box-level TP, FP and FN per class over a set of images.
 
     Args:
@@ -177,19 +161,18 @@ def match_all(images: list[ImageResult], thresholds: list[float],
         match_image(image, thresholds, counts, iou_threshold)
     return counts
 
-
-def f1_score(tp: int, fp: int, fn: int) -> float:
+def f1_score(tp, fp, fn):
     """F1 score, the balance of precision and recall: 2TP / (2TP + FP + FN).
 
     Returns 0 when there are no labelled or predicted boxes (TP + FP + FN = 0).
     """
     denominator = 2 * tp + fp + fn
-    return 2 * tp / denominator if denominator else 0.0
+    if denominator != 0:
+        return 2 * tp / denominator
+    else:
+        return 0
 
-
-def best_threshold_per_class(images: list[ImageResult], num_classes: int, default: float,
-                             candidates: list[float],
-                             iou_threshold: float = 0.5) -> list[tuple[float, float] | None]:
+def best_threshold_per_class(images, num_classes, default, candidates, iou_threshold=0.5):
     """Choose, for each class, the confidence threshold with the highest F1.
 
     A class's threshold only affects that class's boxes, so each class is
@@ -207,9 +190,9 @@ def best_threshold_per_class(images: list[ImageResult], num_classes: int, defaul
 
     Returns:
         For each class, ``(best threshold, its F1)``, or None for a class with
-        no labelled boxes (its F1 cannot be measured).
+        no labelled boxes.
     """
-    best: list[tuple[float, float] | None] = []
+    best = []
     for class_id in range(num_classes):
         best_for_class = None
         for threshold in candidates:
@@ -217,23 +200,21 @@ def best_threshold_per_class(images: list[ImageResult], num_classes: int, defaul
             thresholds[class_id] = threshold
             counts = match_all(images, thresholds, iou_threshold)
             if counts.tp[class_id] + counts.fn[class_id] == 0:
-                break  # no labelled boxes of this class
+                break
             f1 = f1_score(counts.tp[class_id], counts.fp[class_id], counts.fn[class_id])
             if best_for_class is None or f1 > best_for_class[1]:
                 best_for_class = (threshold, f1)
         best.append(best_for_class)
     return best
 
-
-def tray_is_rejected(image: ImageResult, thresholds: list[float]) -> bool:
+def tray_is_rejected(image, thresholds):
     """Whether the model fails a tray: any predicted box above its class's threshold."""
     return any(p.confidence >= thresholds[p.class_id] for p in image.predictions)
 
-
-def count_trays(images: list[ImageResult], thresholds: list[float]) -> TrayCounts:
+def count_trays(images, thresholds):
     """Tray-level pass/fail outcomes for the given per-class thresholds.
 
-    A tray is truly defective if it has at least one labelled box.
+    A tray is defective if it has at least one labelled box.
 
     Args:
         images: Labelled and predicted boxes for each image (tray).
