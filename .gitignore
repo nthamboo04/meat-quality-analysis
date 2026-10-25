@@ -222,6 +222,12 @@ __marimo__/
 # Project-specific
 # Downloaded dataset (see README for download steps)
 data/
-# Ultralytics training outputs and model weights
-runs/
+# Ultralytics training outputs and model weights, except the selected
+# model's weights, kept so evaluation can be reproduced without retraining
 *.pt
+runs/*
+!runs/yolo11n_736_scale0.2/
+runs/yolo11n_736_scale0.2/*
+!runs/yolo11n_736_scale0.2/weights/
+runs/yolo11n_736_scale0.2/weights/*
+!runs/yolo11n_736_scale0.2/weights/best.pt

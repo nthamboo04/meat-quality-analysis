@@ -13,7 +13,7 @@ meat_quality/   project source code
 tests/          pytest tests for data.py and metrics.py
 docs/           HTML code documentation
 data/           downloaded dataset (git-ignored)
-runs/           trained models and training outputs (git-ignored)
+runs/           trained models and training outputs
 results.txt     final validation output of each training run
 test_report.txt latest pytest results
 ```
@@ -62,7 +62,7 @@ python meat_quality/evaluate.py --split test   # final check on the test set
 python meat_quality/benchmark.py     # time per tray, model size and FLOPs
 ```
 
-The selected model is YOLO11n at 736 px trained with scale augmentation 0.2. Its weights are expected at `runs/yolo11n_736_scale0.2/weights/best.pt` (not stored in Git). Each script lists its options with `--help`.
+The selected model is YOLO11n at 736 px trained with scale augmentation 0.2. Its weights are included at `runs/yolo11n_736_scale0.2/weights/best.pt`, so evaluation can be reproduced without retraining. Each script lists its options with `--help`.
 
 ## Tests and documentation
 
